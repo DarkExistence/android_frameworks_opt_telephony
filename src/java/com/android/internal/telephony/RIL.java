@@ -4865,11 +4865,11 @@ public class RIL extends BaseCommands implements CommandsInterface {
      */
     @Override
     public void getCellInfoList(Message result) {
-        RILRequest rr = RILRequest.obtain(RIL_REQUEST_GET_CELL_INFO_LIST, result);
-
-        if (RILJ_LOGD) riljLog(rr.serialString() + "> " + requestToString(rr.mRequest));
-
-        send(rr);
+        if (result != null) {
+            CommandException e = new CommandException(CommandException.Error.REQUEST_NOT_SUPPORTED);
+            AsyncResult.forMessage(result, null, e);
+            result.sendToTarget();
+        }
     }
 
     /**
@@ -4877,15 +4877,11 @@ public class RIL extends BaseCommands implements CommandsInterface {
      */
     @Override
     public void setCellInfoListRate(int rateInMillis, Message response) {
-        if (RILJ_LOGD) riljLog("setCellInfoListRate: " + rateInMillis);
-        RILRequest rr = RILRequest.obtain(RIL_REQUEST_SET_UNSOL_CELL_INFO_LIST_RATE, response);
-
-        rr.mParcel.writeInt(1);
-        rr.mParcel.writeInt(rateInMillis);
-
-        if (RILJ_LOGD) riljLog(rr.serialString() + "> " + requestToString(rr.mRequest));
-
-        send(rr);
+        if (response != null) {
+            CommandException e = new CommandException(CommandException.Error.REQUEST_NOT_SUPPORTED);
+            AsyncResult.forMessage(response, null, e);
+            response.sendToTarget();
+        }
     }
 
     public void setInitialAttachApn(String apn, String protocol, int authType, String username,
@@ -4962,6 +4958,16 @@ public class RIL extends BaseCommands implements CommandsInterface {
      */
     @Override
     public void iccOpenLogicalChannel(String AID, Message response) {
+        if(mRilVersion < 10) {
+            if (response != null) {
+                CommandException ex = new CommandException(
+                    CommandException.Error.REQUEST_NOT_SUPPORTED);
+                AsyncResult.forMessage(response, null, ex);
+                response.sendToTarget();
+            }
+            return;
+        }
+
         RILRequest rr = RILRequest.obtain(RIL_REQUEST_SIM_OPEN_CHANNEL, response);
         rr.mParcel.writeString(AID);
 
@@ -4992,6 +4998,17 @@ public class RIL extends BaseCommands implements CommandsInterface {
     @Override
     public void iccTransmitApduLogicalChannel(int channel, int cla, int instruction,
             int p1, int p2, int p3, String data, Message response) {
+
+        if(mRilVersion < 10) {
+            if (response != null) {
+                CommandException ex = new CommandException(
+                    CommandException.Error.REQUEST_NOT_SUPPORTED);
+                AsyncResult.forMessage(response, null, ex);
+                response.sendToTarget();
+            }
+            return;
+        }
+
         if (channel <= 0) {
             throw new RuntimeException(
                 "Invalid channel in iccTransmitApduLogicalChannel: " + channel);
@@ -5016,6 +5033,17 @@ public class RIL extends BaseCommands implements CommandsInterface {
      */
     private void iccTransmitApduHelper(int rilCommand, int channel, int cla,
             int instruction, int p1, int p2, int p3, String data, Message response) {
+
+        if(mRilVersion < 10) {
+            if (response != null) {
+                CommandException ex = new CommandException(
+                    CommandException.Error.REQUEST_NOT_SUPPORTED);
+                AsyncResult.forMessage(response, null, ex);
+                response.sendToTarget();
+            }
+            return;
+        }
+
         RILRequest rr = RILRequest.obtain(rilCommand, response);
         rr.mParcel.writeInt(channel);
         rr.mParcel.writeInt(cla);
